@@ -339,7 +339,7 @@ function DatasetWorkspace({
             <Button
               variant="ghost"
               size="sm"
-              onClick={() => persist.mutate(undefined)}
+              onClick={() => persist.mutate()}
               disabled={persist.isPending}
             >
               Save changes
