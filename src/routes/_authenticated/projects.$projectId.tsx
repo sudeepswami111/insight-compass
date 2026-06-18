@@ -265,7 +265,7 @@ function DatasetWorkspace({
   }
 
   const persist = useMutation({
-    mutationFn: async (overrides?: Partial<DatasetRecord>) => {
+    mutationFn: async () => {
       const { error } = await supabase
         .from("datasets")
         .update({
@@ -277,7 +277,6 @@ function DatasetWorkspace({
           quality_report: asJson(report),
           row_count: rows.length,
           column_count: schema.length,
-          ...overrides,
         })
         .eq("id", dataset.id);
       if (error) throw error;
