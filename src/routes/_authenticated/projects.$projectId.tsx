@@ -38,6 +38,9 @@ import type {
   QualityReport,
 } from "@/lib/insightforge/types";
 import { toast } from "sonner";
+import type { Json } from "@/integrations/supabase/types";
+
+const asJson = <T,>(v: T) => v as unknown as Json;
 
 export const Route = createFileRoute("/_authenticated/projects/$projectId")({
   head: () => ({
@@ -136,12 +139,12 @@ function ProjectDetail() {
           storage_path,
           row_count: rows.length,
           column_count: columns.length,
-          inferred_schema: schema as unknown as object[],
+          inferred_schema: asJson(schema),
           target_column: targetColumn,
           date_column: dateColumn,
           quality_score: report.score,
-          quality_report: report as unknown as object,
-          rows: rows as unknown as object[],
+          quality_report: asJson(report),
+          rows: asJson(rows),
           cleaned: false,
         })
         .select()
@@ -266,12 +269,12 @@ function DatasetWorkspace({
       const { error } = await supabase
         .from("datasets")
         .update({
-          inferred_schema: schema as unknown as object[],
-          rows: rows as unknown as object[],
+          inferred_schema: asJson(schema),
+          rows: asJson(rows),
           target_column: targetColumn,
           date_column: dateColumn,
           quality_score: report.score,
-          quality_report: report as unknown as object,
+          quality_report: asJson(report),
           row_count: rows.length,
           column_count: schema.length,
           ...overrides,
@@ -299,12 +302,12 @@ function DatasetWorkspace({
       const { error } = await supabase
         .from("datasets")
         .update({
-          rows: result.rows as unknown as object[],
-          inferred_schema: result.schema as unknown as object[],
+          rows: asJson(result.rows),
+          inferred_schema: asJson(result.schema),
           row_count: result.rows.length,
           column_count: result.schema.length,
           quality_score: newReport.score,
-          quality_report: newReport as unknown as object,
+          quality_report: asJson(newReport),
           cleaned: true,
         })
         .eq("id", dataset.id);
