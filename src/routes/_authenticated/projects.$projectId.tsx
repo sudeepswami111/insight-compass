@@ -427,10 +427,14 @@ function DatasetWorkspace({
           <Button
             className="mt-3 w-full"
             variant="secondary"
-            disabled
-            title="Coming in Phase 2"
+            asChild
           >
-            Run analysis (coming soon)
+            <Link
+              to="/projects/$projectId/analysis"
+              params={{ projectId: dataset.id ? dataset.id : "" }}
+            >
+              Open analysis
+            </Link>
           </Button>
         </Card>
         {dataset.cleaned && (
