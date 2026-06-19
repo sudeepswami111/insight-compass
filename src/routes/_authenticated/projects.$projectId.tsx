@@ -243,6 +243,7 @@ function DatasetWorkspace({
   uploading: boolean;
 }) {
   const qc = useQueryClient();
+  const { projectId } = useParams({ from: "/_authenticated/projects/$projectId" });
   const [schema, setSchema] = useState<ColumnSchema[]>(dataset.inferred_schema);
   const [rows, setRows] = useState<DataRow[]>(dataset.rows);
   const [targetColumn, setTargetColumn] = useState<string | null>(
@@ -431,7 +432,7 @@ function DatasetWorkspace({
           >
             <Link
               to="/projects/$projectId/analysis"
-              params={{ projectId: dataset.id ? dataset.id : "" }}
+              params={{ projectId }}
             >
               Open analysis
             </Link>
