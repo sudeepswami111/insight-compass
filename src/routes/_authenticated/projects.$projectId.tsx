@@ -243,6 +243,7 @@ function DatasetWorkspace({
   uploading: boolean;
 }) {
   const qc = useQueryClient();
+  const { projectId } = useParams({ from: "/_authenticated/projects/$projectId" });
   const [schema, setSchema] = useState<ColumnSchema[]>(dataset.inferred_schema);
   const [rows, setRows] = useState<DataRow[]>(dataset.rows);
   const [targetColumn, setTargetColumn] = useState<string | null>(
@@ -427,10 +428,14 @@ function DatasetWorkspace({
           <Button
             className="mt-3 w-full"
             variant="secondary"
-            disabled
-            title="Coming in Phase 2"
+            asChild
           >
-            Run analysis (coming soon)
+            <Link
+              to="/projects/$projectId/analysis"
+              params={{ projectId }}
+            >
+              Open analysis
+            </Link>
           </Button>
         </Card>
         {dataset.cleaned && (
