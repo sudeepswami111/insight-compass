@@ -22,6 +22,9 @@ import {
   RefreshCcw,
   Trash2,
   Sparkles,
+  TrendingUp,
+  ToggleLeft,
+  ToggleRight,
 } from "lucide-react";
 import { parseFile } from "@/lib/insightforge/parse";
 import {
@@ -205,9 +208,10 @@ function ProjectDetail() {
                   </p>
                 )}
               </div>
-              <Badge variant="outline" className="font-normal">
-                {project.mode === "advanced" ? "Advanced mode" : "Simple mode"}
-              </Badge>
+              <ModeToggle
+                projectId={projectId}
+                currentMode={project.mode as "simple" | "advanced"}
+              />
             </div>
 
             <div className="mt-8">
@@ -443,7 +447,81 @@ function DatasetWorkspace({
             Cleaning applied to this dataset.
           </Card>
         )}
+        <Card className="border-forecast/30 bg-forecast/5 p-4">
+          <p className="text-xs uppercase tracking-wide text-forecast">
+            Data Science
+          </p>
+          <div className="mt-1.5 flex items-start gap-2">
+            <TrendingUp className="mt-0.5 h-4 w-4 text-forecast" />
+            <p className="text-sm">
+              After analysis, jump to the Science layer for forecasts, predictive
+              models, clustering, and what-if simulation.
+            </p>
+          </div>
+          <Button
+            className="mt-3 w-full bg-forecast text-forecast-foreground hover:bg-forecast/90"
+            asChild
+          >
+            <Link
+              to="/projects/$projectId/science"
+              params={{ projectId }}
+            >
+              Open data science
+            </Link>
+          </Button>
+        </Card>
       </aside>
     </div>
+  );
+}
+
+// ── Mode Toggle ──────────────────────────────────────────────────────────────
+
+function ModeToggle({
+  projectId,
+  currentMode,
+}: {
+  projectId: string;
+  currentMode: "simple" | "advanced";
+}) {
+  const qc = useQueryClient();
+  const toggle = useMutation({
+    mutationFn: async () => {
+      const next = currentMode === "simple" ? "advanced" : "simple";
+      const { error } = await supabase
+        .from("projects")
+        .update({ mode: next })
+        .eq("id", projectId);
+      if (error) throw error;
+      return next;
+    },
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ["project", projectId] });
+    },
+    onError: (e) =>
+      toast.error("Could not switch mode", {
+        description: e instanceof Error ? e.message : "Unknown",
+      }),
+  });
+
+  const isAdvanced = currentMode === "advanced";
+  return (
+    <button
+      onClick={() => toggle.mutate()}
+      disabled={toggle.isPending}
+      className={`flex items-center gap-1.5 rounded-full border px-3 py-1 text-xs transition-colors ${
+        isAdvanced
+          ? "border-forecast/40 bg-forecast/10 text-forecast"
+          : "border-border/60 bg-muted/40 text-muted-foreground hover:bg-muted"
+      }`}
+      title={isAdvanced ? "Switch to Simple mode" : "Switch to Advanced mode"}
+    >
+      {isAdvanced ? (
+        <ToggleRight className="h-3.5 w-3.5" />
+      ) : (
+        <ToggleLeft className="h-3.5 w-3.5" />
+      )}
+      {isAdvanced ? "Advanced mode" : "Simple mode"}
+    </button>
   );
 }

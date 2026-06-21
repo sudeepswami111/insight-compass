@@ -14,6 +14,7 @@ import { Route as AuthenticatedRouteRouteImport } from './routes/_authenticated/
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as AuthenticatedProjectsRouteImport } from './routes/_authenticated/projects'
 import { Route as AuthenticatedProjectsProjectIdRouteImport } from './routes/_authenticated/projects.$projectId'
+import { Route as AuthenticatedProjectsProjectIdScienceRouteImport } from './routes/_authenticated/projects.$projectId.science'
 import { Route as AuthenticatedProjectsProjectIdAnalysisRouteImport } from './routes/_authenticated/projects.$projectId.analysis'
 
 const AuthRoute = AuthRouteImport.update({
@@ -41,6 +42,12 @@ const AuthenticatedProjectsProjectIdRoute =
     path: '/$projectId',
     getParentRoute: () => AuthenticatedProjectsRoute,
   } as any)
+const AuthenticatedProjectsProjectIdScienceRoute =
+  AuthenticatedProjectsProjectIdScienceRouteImport.update({
+    id: '/science',
+    path: '/science',
+    getParentRoute: () => AuthenticatedProjectsProjectIdRoute,
+  } as any)
 const AuthenticatedProjectsProjectIdAnalysisRoute =
   AuthenticatedProjectsProjectIdAnalysisRouteImport.update({
     id: '/analysis',
@@ -54,6 +61,7 @@ export interface FileRoutesByFullPath {
   '/projects': typeof AuthenticatedProjectsRouteWithChildren
   '/projects/$projectId': typeof AuthenticatedProjectsProjectIdRouteWithChildren
   '/projects/$projectId/analysis': typeof AuthenticatedProjectsProjectIdAnalysisRoute
+  '/projects/$projectId/science': typeof AuthenticatedProjectsProjectIdScienceRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
@@ -61,6 +69,7 @@ export interface FileRoutesByTo {
   '/projects': typeof AuthenticatedProjectsRouteWithChildren
   '/projects/$projectId': typeof AuthenticatedProjectsProjectIdRouteWithChildren
   '/projects/$projectId/analysis': typeof AuthenticatedProjectsProjectIdAnalysisRoute
+  '/projects/$projectId/science': typeof AuthenticatedProjectsProjectIdScienceRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
@@ -70,6 +79,7 @@ export interface FileRoutesById {
   '/_authenticated/projects': typeof AuthenticatedProjectsRouteWithChildren
   '/_authenticated/projects/$projectId': typeof AuthenticatedProjectsProjectIdRouteWithChildren
   '/_authenticated/projects/$projectId/analysis': typeof AuthenticatedProjectsProjectIdAnalysisRoute
+  '/_authenticated/projects/$projectId/science': typeof AuthenticatedProjectsProjectIdScienceRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
@@ -79,6 +89,7 @@ export interface FileRouteTypes {
     | '/projects'
     | '/projects/$projectId'
     | '/projects/$projectId/analysis'
+    | '/projects/$projectId/science'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
@@ -86,6 +97,7 @@ export interface FileRouteTypes {
     | '/projects'
     | '/projects/$projectId'
     | '/projects/$projectId/analysis'
+    | '/projects/$projectId/science'
   id:
     | '__root__'
     | '/'
@@ -94,6 +106,7 @@ export interface FileRouteTypes {
     | '/_authenticated/projects'
     | '/_authenticated/projects/$projectId'
     | '/_authenticated/projects/$projectId/analysis'
+    | '/_authenticated/projects/$projectId/science'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -139,6 +152,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedProjectsProjectIdRouteImport
       parentRoute: typeof AuthenticatedProjectsRoute
     }
+    '/_authenticated/projects/$projectId/science': {
+      id: '/_authenticated/projects/$projectId/science'
+      path: '/science'
+      fullPath: '/projects/$projectId/science'
+      preLoaderRoute: typeof AuthenticatedProjectsProjectIdScienceRouteImport
+      parentRoute: typeof AuthenticatedProjectsProjectIdRoute
+    }
     '/_authenticated/projects/$projectId/analysis': {
       id: '/_authenticated/projects/$projectId/analysis'
       path: '/analysis'
@@ -151,12 +171,15 @@ declare module '@tanstack/react-router' {
 
 interface AuthenticatedProjectsProjectIdRouteChildren {
   AuthenticatedProjectsProjectIdAnalysisRoute: typeof AuthenticatedProjectsProjectIdAnalysisRoute
+  AuthenticatedProjectsProjectIdScienceRoute: typeof AuthenticatedProjectsProjectIdScienceRoute
 }
 
 const AuthenticatedProjectsProjectIdRouteChildren: AuthenticatedProjectsProjectIdRouteChildren =
   {
     AuthenticatedProjectsProjectIdAnalysisRoute:
       AuthenticatedProjectsProjectIdAnalysisRoute,
+    AuthenticatedProjectsProjectIdScienceRoute:
+      AuthenticatedProjectsProjectIdScienceRoute,
   }
 
 const AuthenticatedProjectsProjectIdRouteWithChildren =
@@ -197,3 +220,13 @@ const rootRouteChildren: RootRouteChildren = {
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
   ._addFileTypes<FileRouteTypes>()
+
+import type { getRouter } from './router.tsx'
+import type { startInstance } from './start.ts'
+declare module '@tanstack/react-start' {
+  interface Register {
+    ssr: true
+    router: Awaited<ReturnType<typeof getRouter>>
+    config: Awaited<ReturnType<typeof startInstance.getOptions>>
+  }
+}

@@ -1,23 +1,25 @@
 import { createFileRoute, Link, notFound, useParams } from "@tanstack/react-router";
 import { useQuery } from "@tanstack/react-query";
-import { ArrowLeft } from "lucide-react";
+import { ArrowLeft, TrendingUp } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { AppHeader } from "@/components/insightforge/AppHeader";
-import { AnalysisDashboard } from "@/components/insightforge/AnalysisDashboard";
+import { ScienceDashboard } from "@/components/insightforge/ScienceDashboard";
 import { Badge } from "@/components/ui/badge";
+import { analyzeDataset } from "@/lib/insightforge/analyze";
 import type { ColumnSchema, DataRow, QualityReport } from "@/lib/insightforge/types";
+import { useMemo } from "react";
 
-export const Route = createFileRoute("/_authenticated/projects/$projectId/analysis")({
+export const Route = createFileRoute("/_authenticated/projects/$projectId/science")({
   head: () => ({
     meta: [
-      { title: "Analysis — InsightForge" },
+      { title: "Data Science — InsightForge" },
       {
         name: "description",
-        content: "Descriptive analysis, trends, segments, and correlations.",
+        content: "Forecasting, predictive modeling, clustering, and what-if simulation.",
       },
     ],
   }),
-  component: AnalysisPage,
+  component: SciencePage,
 });
 
 interface DatasetRecord {
@@ -33,9 +35,9 @@ interface DatasetRecord {
   rows: DataRow[];
 }
 
-function AnalysisPage() {
+function SciencePage() {
   const { projectId } = useParams({
-    from: "/_authenticated/projects/$projectId/analysis",
+    from: "/_authenticated/projects/$projectId/science",
   });
 
   const { data: project } = useQuery({
@@ -67,36 +69,45 @@ function AnalysisPage() {
     },
   });
 
+  const analysis = useMemo(() => {
+    if (!dataset) return null;
+    return analyzeDataset(dataset.rows, dataset.inferred_schema, {
+      dateColumn: dataset.date_column,
+      targetColumn: dataset.target_column,
+    });
+  }, [dataset]);
+
   return (
     <div className="min-h-screen bg-background">
       <AppHeader />
       <main className="mx-auto max-w-6xl px-4 py-8">
         <Link
-          to="/projects/$projectId"
+          to="/projects/$projectId/analysis"
           params={{ projectId }}
           className="inline-flex items-center gap-1 text-xs text-muted-foreground hover:text-foreground"
         >
           <ArrowLeft className="h-3 w-3" />
-          Back to data
+          Back to analysis
         </Link>
         <div className="mt-3 flex flex-wrap items-end justify-between gap-3">
           <div>
             <h1 className="text-2xl font-semibold tracking-tight">
-              {project?.name ?? "Analysis"}
+              {project?.name ?? "Data Science"}
             </h1>
             <p className="mt-1 text-sm text-muted-foreground">
-              Descriptive analysis — what's in the data right now.
+              Predictive models, forecasts, and what-if simulations.
             </p>
           </div>
-          <Badge variant="outline" className="border-analysis/40 bg-analysis/10 text-analysis">
-            Analysis layer
+          <Badge variant="outline" className="border-forecast/40 bg-forecast/10 text-forecast">
+            <TrendingUp className="mr-1 h-3 w-3" />
+            Science layer
           </Badge>
         </div>
 
         <div className="mt-8">
           {isLoading ? (
             <p className="text-sm text-muted-foreground">Loading dataset…</p>
-          ) : !dataset ? (
+          ) : !dataset || !analysis ? (
             <div className="rounded-md border border-border p-6 text-sm text-muted-foreground">
               No dataset uploaded yet.{" "}
               <Link
@@ -106,15 +117,17 @@ function AnalysisPage() {
               >
                 Upload one
               </Link>{" "}
-              to enable analysis.
+              to enable data science features.
             </div>
           ) : (
-            <AnalysisDashboard
-              datasetId={dataset.id}
+            <ScienceDashboard
               rows={dataset.rows}
               schema={dataset.inferred_schema}
               dateColumn={dataset.date_column}
               targetColumn={dataset.target_column}
+              analysis={analysis}
+              projectName={project?.name ?? "Project"}
+              isAdvanced={project?.mode === "advanced"}
             />
           )}
         </div>
